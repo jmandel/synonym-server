@@ -17,7 +17,7 @@ function $syns(w) {
 };
 
 function $qat(w){
-  var result = UrlFetchApp.fetch("http://www.quinapalus.com/cgi-bin/qat?pat="+encodeURIComponent(w)+"&ent=Search&dict=0");
+  var result = UrlFetchApp.fetch("http://www.quinapalus.com/cgi-bin/qat?pat="+encodeURIComponent(w)+"&ent=Search&dict=5");
   var rbody  = result.getContentText().split("\n");
   var matches = [];
   

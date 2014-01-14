@@ -1,4 +1,13 @@
-function $and() {
+/**
+ * Identifies words that match a set of constraints.
+ *
+ * @param {...string} constraints Alternating constraints and values.
+ * 
+ * For example, anagrams of 'later' that mean 'alarm': 
+ * `all("qat", "/later", "syns", "alarm")`
+ * @customfunction
+ */
+function all(constraints) {
   var args = argPairs(arguments);
   
   var filters = args.filter(isFilter);
@@ -11,12 +20,29 @@ function $and() {
   return "(None.)";  
 };
 
-function $syns(w) {
+/**
+ * Identifies a set of words synonmyous with the input
+ * For example synonyms of 'alarm':
+ * `syms("alarm")`
+ * @param {string} word - Word for which synonmys will be discovered.
+ * @customfunction
+ */
+function syn(word) {
+  var w = argList(arguments).join("");
   var result = UrlFetchApp.fetch("http://synonyms.pickfor.us/"+w+"/s");
   return JSON.parse(result.getContentText());
 };
 
-function $qat(w){
+
+/**
+ * Expands a query using quinapalus Qat (http://quinapalus.com/cgi-bin/qat).
+ * For example, anagrams of triangle: qat("/triaingle")
+ * @param {string} query  Query to post to Qat.
+ * @customfunction
+ */
+function qat(query){
+  var w = argList(arguments).join("");
+  
   var result = UrlFetchApp.fetch("http://www.quinapalus.com/cgi-bin/qat?pat="+encodeURIComponent(w)+"&ent=Search&dict=5");
   var rbody  = result.getContentText().split("\n");
   var matches = [];
@@ -39,7 +65,14 @@ function $qat(w){
   return matches;
 };
 
-function $wiki(w){  
+/**
+ * Returns the set of words on the wikipedia page for a topic.
+ *
+ * @param {string} topic - Topic to resolve a Wikipedia page for.
+ * @customfunction
+ */
+function wiki(w){  
+  w = argList(arguments).join("");
   var result = UrlFetchApp.fetch("http://en.wikipedia.org/wiki/"+w);
   var r  = result.getContentText();
   var words = r.replace(/^[\s\S]*?From Wikipedia, the free encyclopedia/g, "")
@@ -61,7 +94,7 @@ function resolveQuery(filters){
   return function(q){
     var name = q[0];
     var val = q[1];
-    return eval("$"+name)(val).filter(function(v){
+    return eval(name)(val).filter(function(v){
       var passes = true;
       filters.forEach(function(f){
         var fRegExp = new RegExp(f[1]);
@@ -77,7 +110,6 @@ function intersect(lists){
   lists[0].forEach(function(v){
     res[v] = true;
   });
-
   for (var i=1; i<lists.length; i++) {
     var vs = lists[i].filter(function(v){
       return res[v] === true;
